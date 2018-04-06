@@ -68,7 +68,7 @@ eval $GIT_BISECT_RESET $QUIESCE
 # They are the most recent commits to have "Your number is 0" and
 # "Your number is 100" as commit messages respectively.
 
-GOOD_COMMIT_CMD="git log --grep '^Your number is: 0\$' --pretty=oneline"
+GOOD_COMMIT_CMD="git log --grep '^Your number is: -1\$' --pretty=oneline"
 verbose_print $GOOD_COMMIT_CMD
 BAD_COMMIT_CMD="git log --grep '^Your number is: 100\$' --pretty=oneline"
 verbose_print $BAD_COMMIT_CMD
@@ -86,14 +86,11 @@ eval $GIT_BISECT_START $QUIESCE
 # Run our bisection automatically with our test:
 GIT_BISECT_RUN="git bisect run python guess.py $GUESSME"
 verbose_print $GIT_BISECT_RUN
-eval $GIT_BISECT_RUN $QUIESCE
-
-# Git bisect leaves us at the last good commit, so move forward by one:
-# First, find current commit:
-GIT_CURRENT_COMMIT=`git log --pretty=oneline | head -1 | awk '{print \$1}'`
-
-# Then find next commit:
-GIT_NEXT_COMMIT=`git log --reverse --ancestry-path $GIT_CURRENT_COMMIT^..master --pretty=oneline | head -2 | tail -1 | awk '{print $1}'`
+QUIET_GREP=''
+if [ $VERBOSE -ne 1 ]; then
+	QUIET_GREP="| tail -4 | grep -o 'Your number is:.*'"
+fi	
+eval $GIT_BISECT_RUN $QUIET_GREP
 
 verbose_print "Current commit is $GIT_CURRENT_COMMIT, next commit is $GIT_NEXT_COMMIT"
 
@@ -103,5 +100,3 @@ GUESS=`git show $GIT_NEXT_COMMIT -q | grep -o 'Your number is.*$'`
 # Reset after finishing:
 verbose_print $GIT_BISECT_RESET
 eval $GIT_BISECT_RESET $QUIESCE
-
-echo $GUESS
