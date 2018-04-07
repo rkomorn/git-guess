@@ -1,4 +1,4 @@
 import sys
-if int(sys.argv[1]) > 35:
+if int(sys.argv[1]) > 36:
 	sys.exit(0)
 sys.exit(1)
