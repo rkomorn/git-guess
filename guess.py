@@ -1,3 +1,4 @@
 import sys
-sys.exit(max(0, min(1, 100 - int(sys.argv[1]) + 1)))
-
+if int(sys.argv[1]) > -1:
+	sys.exit(0)
+sys.exit(1)
