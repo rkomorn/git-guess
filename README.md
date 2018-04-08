@@ -96,3 +96,27 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Why?
 
 This is meant as an introduction to the concept of git bisect and how it uses binary search to find the first "bad" commit.
+
+Our repository contains 102 consecutive commits updating guess.py to compare the integer it's given as as command linen argument to an integer ranging from 0 for the first commit to 100 for the last commit. It exits with 0 if the argument is larger than the integer in guess.py, and 1 if the argument is equal to or smaller than the integer in guess.py .
+
+In this case, a "bad" commit is a commit in which the number being guessed is lower than the number currently being compared by guess.py . As a result, our first "bad" commit is the commit in which the number being guessed is equal to the number in guess.py .
+
+## Some interesting notes learned along the way
+###First "good" commit
+Because we must provide git bisect with a first "good" commit, and our method looks for the first "bad" commit, we have to start at 0.
+
+This is due to the fact that the commit provided as "good" is not tested (and is assumed to be good, rather than verified to be good using the test provided to git bisect run). As a result, the first "bad" commit for 1 would actually be the commit for 2.
+
+### Edge cases around 25, 50 and 75
+The original method looked at the commit following the one where git bisect run left off. This appeared to work except for 25, 50 and 75, in which case the numbers guessed were off by 1.
+
+This is due to the fact that that method required starting from -1 rather than 0, and to the way git bisect tracks which commits were bad, sometimes arriving "from the left" (or from older commits) and sometimes arriving "from the right" (or from newer commits).
+
+Taking 25 as an example, git bisect would start at commit 49 (the midway point between -1 and 100), which would fail, then look at commit 24, which would pass. It would then continue its search with 36, 30, 27, 26, and finally 25. At that point, knowing that 24 was the last good commit, git bisect stopped and did not check out commit 24 again, making the next commit 26, and causing the guess.sh script to erroneously claim that the number being guessed was 26 and not 25.
+
+### O(log n) runtime (but never better)
+Somewhat counterintuitively, git bisect never does better than O(log n), even when guessing 50 (or 25 or 75).
+
+That's because git bisect searches for the first commit that went from good to bad.
+
+Taking 25 as an example again, finding out that the commit for 25 is bad is not enough. It must search to find that the commit for 24 is the last good commit. This means the following search: 50, 25, 12, 18, 21, 23, and finally 24.

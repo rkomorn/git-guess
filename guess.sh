@@ -68,7 +68,7 @@ eval $GIT_BISECT_RESET $QUIESCE
 # They are the most recent commits to have "Your number is 0" and
 # "Your number is 100" as commit messages respectively.
 
-GOOD_COMMIT_CMD="git log --grep '^Your number is: -1\$' --pretty=oneline"
+GOOD_COMMIT_CMD="git log --grep '^Your number is: 0\$' --pretty=oneline"
 verbose_print $GOOD_COMMIT_CMD
 BAD_COMMIT_CMD="git log --grep '^Your number is: 100\$' --pretty=oneline"
 verbose_print $BAD_COMMIT_CMD
