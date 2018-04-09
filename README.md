@@ -102,10 +102,10 @@ Our repository contains 102 consecutive commits updating guess.py to compare the
 In this case, a "bad" commit is a commit in which the number being guessed is lower than the number currently being compared by guess.py . As a result, our first "bad" commit is the commit in which the number being guessed is equal to the number in guess.py .
 
 ## Some interesting notes learned along the way
-###First "good" commit
+### First "good" commit
 Because we must provide git bisect with a first "good" commit, and our method looks for the first "bad" commit, we have to start at 0.
 
-This is due to the fact that the commit provided as "good" is not tested (and is assumed to be good, rather than verified to be good using the test provided to git bisect run). As a result, the first "bad" commit for 1 would actually be the commit for 2.
+This is due to the fact that the commit provided as "good" is not tested (and is assumed to be good, rather than verified to be good using the test provided to git bisect run). As a result, if starting at 1, the first "bad" commit for 1 would actually be the commit for 2.
 
 ### Edge cases around 25, 50 and 75
 The original method looked at the commit following the one where git bisect run left off. This appeared to work except for 25, 50 and 75, in which case the numbers guessed were off by 1.
