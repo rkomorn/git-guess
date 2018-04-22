@@ -94,9 +94,6 @@ eval $GIT_BISECT_RUN $QUIET_GREP
 
 verbose_print "Current commit is $GIT_CURRENT_COMMIT, next commit is $GIT_NEXT_COMMIT"
 
-GUESS=`git show $GIT_NEXT_COMMIT -q | grep -o 'Your number is.*$'`
-
-
 # Reset after finishing:
 verbose_print $GIT_BISECT_RESET
 eval $GIT_BISECT_RESET $QUIESCE
