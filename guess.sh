@@ -59,6 +59,27 @@ if [ $VERBOSE -ne 1 ]; then
 	QUIESCE='> /dev/null 2>&1'
 fi
 
+# Remember the current commit:
+STARTING_COMMIT=$(git rev-parse HEAD)
+
+# Generate 101 commits that start exiting with value 1 at the random number:
+for COMMIT_NUM in $(seq 0 100); do
+	if [ $COMMIT_NUM -lt $GUESSME ]; then
+		EXIT_VALUE=0
+		BROKEN_STATUS="not broken"
+	else
+		EXIT_VALUE=1
+		BROKEN_STATUS="broken"
+	fi
+	cat <<-EOF > guess.py
+	# commit number: $COMMIT_NUM
+	# broken status: $BROKEN_STATUS
+	import sys
+	sys.exit($EXIT_VALUE)
+	EOF
+	eval git commit -am \"Your number is: $COMMIT_NUM\" $QUIESCE
+done
+
 # Reset our git bisect just to be safe
 GIT_BISECT_RESET="git bisect reset"
 verbose_print $GIT_BISECT_RESET
@@ -84,7 +105,7 @@ verbose_print $GIT_BISECT_START
 eval $GIT_BISECT_START $QUIESCE
 
 # Run our bisection automatically with our test:
-GIT_BISECT_RUN="git bisect run python guess.py $GUESSME"
+GIT_BISECT_RUN="git bisect run python guess.py"
 verbose_print $GIT_BISECT_RUN
 QUIET_GREP=''
 if [ $VERBOSE -ne 1 ]; then
@@ -92,8 +113,16 @@ if [ $VERBOSE -ne 1 ]; then
 fi	
 eval $GIT_BISECT_RUN $QUIET_GREP
 
-verbose_print "Current commit is $GIT_CURRENT_COMMIT, next commit is $GIT_NEXT_COMMIT"
-
 # Reset after finishing:
 verbose_print $GIT_BISECT_RESET
 eval $GIT_BISECT_RESET $QUIESCE
+
+# Reset to original commit:
+GIT_RESET="git reset $STARTING_COMMIT"
+if [ $VERBOSE -eq 0 ]; then
+	eval $GIT_RESET $QUIESCE
+else
+	verbose_print verbose specified, not resetting repository.
+	verbose_print Make sure to reset your repo with:
+	verbose_print $GIT_RESET
+fi
